@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: 
+  name: sag-pp-tsa-cluster
+  annotations:
+    # Having this annotation so that headless service always registers the IP address irrespective of probe status.
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  namespace: nsp-sag-pp
+spec:
+  serviceName: sag-pp-tsa-svc-h
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sag-pp-tsa-cluster
+  template:
+    metadata:
+      labels:
+        app: sag-pp-tsa-cluster
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: sag-pp-tsa-server
+          image: masedocker2021/sag-pp-tsa107:v1.2
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: "5Gi" 
+            requests:
+              cpu: "0.1"
+              memory: "1Gi"
+ #         imagePullPolicy: Always
+          readinessProbe:
+            exec:
+              # Handling 400 status as well as in case of PASSIVE(terracotta-0) and ACTIVE(terracotta-1) startup scenario there is a deadlock.
+              command: ["sh", "-c", "status_code=$(curl -o /dev/null --silent --write-out '%{http_code}\n' http://localhost:9540/tc-management-api/agents); if [ $status_code -eq \"200\" ] || [ $status_code -eq \"400\" ]; then exit 0; fi; exit 1"]
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            # 10,000 as failure threshold gives around 41 hours of time to load from FRS and start terracotta successfully.
+            failureThreshold: 10000
+          livenessProbe:
+            exec:
+              # Handling 400 status as well as in case of PASSIVE(terracotta-0) and ACTIVE(terracotta-1) startup scenario there is a deadlock.
+              command: ["sh", "-c", "status_code=$(curl -o /dev/null --silent --write-out '%{http_code}\n' http://localhost:9540/tc-management-api/agents); if [ $status_code -eq \"200\" ] || [ $status_code -eq \"400\" ]; then exit 0; fi; exit 1"]
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            # 10,000 as failure threshold gives around 41 hours of time to load from FRS and start terracotta successfully.
+            failureThreshold: 10000
+
+          ports:
+            - containerPort: 9510
+              name: server
+            - containerPort: 9530
+              name: replication
+            - containerPort: 9540
+              name: management
+          volumeMounts:
+            - name: diskstore
+              mountPath: /data/diskstore
+            - name: backups
+              mountPath: /data/backups
+            - name: config-volume
+              mountPath: /config/tc-config.xml
+              subPath: tc-config.xml
+            - name: custom-wrapper-conf-volume
+              mountPath: /opt/softwareag/Terracotta/server/wrapper/conf/custom_wrapper.conf
+              subPath: custom_wrapper.conf
+            - name: license-volume
+              mountPath: /license/license.key
+              subPath: license.key
+      imagePullSecrets:
+      - name: dockerrepocred
+      volumes:
+        - name: config-volume
+          configMap:
+            name: sag-pp-tsa-config
+        - name: custom-wrapper-conf-volume
+          configMap:
+            name: sag-pp-tsa-config
+        - name: license-volume
+          configMap:
+            name: sag-pp-tsa-config
+  volumeClaimTemplates:
+  - metadata:
+      name: diskstore
+    spec:
+      storageClassName: standard
+      accessModes: 
+      - ReadWriteMany
+      resources:
+        requests:
+          storage: 500Mi
+  - metadata:
+      name: backups
+    spec:
+      storageClassName: standard
+      accessModes: 
+      - ReadWriteMany
+      resources:
+        requests:
+          storage: 500Mi
+

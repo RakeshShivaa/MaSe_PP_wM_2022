@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sag-pp-tsa-config
+  namespace: nsp-sag-pp
+data:
+  tc-config.xml: 
+    <?xml version="1.0" encoding="UTF-8"?>
+
+    <tc:tc-config xmlns:tc="http://www.terracotta.org/config">
+      <servers>
+        <mirror-group>
+          <server host="sag-pp-tsa-cluster-0.sag-pp-tsa-svc-h.nsp-sag-pp.svc.cluster.local" name="sag-pp-tsa-cluster-0" >
+            <tsa-port>9510</tsa-port>
+            <management-port>9540</management-port>
+            <tsa-group-port>9530</tsa-group-port>
+            <offheap>
+               <enabled>true</enabled>
+               <maxDataSize>1g</maxDataSize>
+            </offheap>
+            <data>/data/diskstore</data>
+            <data-backup>/data/backups</data-backup>
+            <logs>stdout:</logs>
+          </server>
+        </mirror-group>
+      </servers>
+      <clients>
+        <logs>stdout:</logs>
+      </clients>
+    </tc:tc-config>
+    
+  custom_wrapper.conf: |
+    wrapper.app.parameter.13="%WRAPPER_HOSTNAME%"
+    wrapper.app.parameter.6="%WRAPPER_HOSTNAME%"
+    wrapper.java.initmemory=2048
+    wrapper.java.maxmemory=2048
+    wrapper.java.additional.8=-XX:MaxDirectMemorySize=9223372036854775807
+    wrapper.java.additional.9=-Djavax.net.ssl.trustStore=""
+    wrapper.java.additional.9.stripquotes=TRUE
+
+
+  license.key: |
+    # This software license, granted by Terracotta Inc. - a Software AG company, is valid for and may only be used
+    # by the licensee of this product ("Licensee").
+    # Descriptor version: 4
+    # ------------------------------------------------------------------------------------
+    Date of Issue: 2022-10-06
+    Expiration Date: 2023-10-31
+    License Type: Commercial
+    License Number: FOR INTERNAL USE ONLY
+    Licensee: SOFTWARE AG
+    Product: BigMemory Max
+    Edition: EX
+    Capabilities: TMC, WAN, authentication, ehcache, ehcache offheap, search, security, server array offheap
+    Max Client Count: 50
+    webMethods OEM: false
+    ehcache.maxOffHeap: 500G
+    terracotta.serverArray.maxDataStorage: 500G
+    Signature: MCsCEzeU/oxDADJthPHmWgetGbHlVhMCFH6XZkL+be1QQsXyT+xeOwl+egmK

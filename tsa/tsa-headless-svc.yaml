@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sag-pp-tsa-svc-h
+  labels:
+    app: sag-pp-tsa-svc-h
+  namespace: nsp-sag-pp
+spec:
+  selector:
+    app: sag-pp-tsa-cluster
+  clusterIP: None
+  ports:
+    - port: 9510
+      name: server
+    - port: 9530
+      name: replication
+    - port: 9540
+      name: management
