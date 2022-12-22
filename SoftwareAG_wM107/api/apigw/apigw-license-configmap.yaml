@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sag-pp-apigw-license-config
+  namespace: nsp-sag-pp
+data: 
+
+  terracotta-license.key: |
+    # This software license, granted by Terracotta Inc. - a Software AG company, is valid for and may only be used
+    # by the licensee of this product ("Licensee").
+    # Descriptor version: 4
+    # ------------------------------------------------------------------------------------
+    Date of Issue: 2022-10-06
+    Expiration Date: 2023-10-31
+    License Type: Commercial
+    License Number: FOR INTERNAL USE ONLY
+    Licensee: SOFTWARE AG
+    Product: BigMemory Max
+    Edition: EX
+    Capabilities: TMC, WAN, authentication, ehcache, ehcache offheap, search, security, server array offheap
+    Max Client Count: 50
+    webMethods OEM: false
+    ehcache.maxOffHeap: 500G
+    terracotta.serverArray.maxDataStorage: 500G
+    Signature: MCsCEzeU/oxDADJthPHmWgetGbHlVhMCFH6XZkL+be1QQsXyT+xeOwl+egmK
+
+  apigw-licensekey.xml: |
+    <?xml version="1.0" encoding="US-ASCII"?>
+    <SoftwareAG_License>
+    <Component Id="SalesInfo">
+    <SerialNumber>0000709315</SerialNumber>
+    <LicenseKey>D497A20B6177A1054F03DA48CF31C203</LicenseKey>
+    <CustomerID>Software AG for Solution Book Internal USE ONLY</CustomerID>
+    <CustomerName>3150000</CustomerName>
+    <ContractDetails>Internal Keys</ContractDetails>
+    <ContractPosNumber>10</ContractPosNumber>
+    <LicenseTypeDetails>Internal</LicenseTypeDetails>
+    <AutoCallHome>No</AutoCallHome>
+    </Component>
+    <Component Id="ProductInfo">
+    <ExpirationDate>2023/10/31</ExpirationDate>
+    <OS>win, SunOS, Linux, Linux S390, AIX, HP-UX, MacOS</OS>
+    <ProductCode>YAIAA</ProductCode>
+    <ProductID/>
+    <ProductName>API Gateway Advanced Edition</ProductName>
+    <ProductVersion>10.4</ProductVersion>
+    <Usage/>
+    <RenewalDate/>
+    <HigherLevPosNr/>
+    <HigherLevProdCode/>
+    <HigherLevProdName/>
+    </Component>
+    <Component Id="Integration Server">
+    <ProductCode>YAI</ProductCode>
+    <ProductVersion>10.4</ProductVersion>
+    <ConcurrentSessions>Unlimited</ConcurrentSessions>
+    <Clustering>yes</Clustering>
+    <PubSub>no</PubSub>
+    <ART>no</ART>
+    <RemoteInvoke>yes</RemoteInvoke>
+    <GuaranteedDelivery>no</GuaranteedDelivery>
+    <SecurityAuditing>yes</SecurityAuditing>
+    <DistributedCache>yes</DistributedCache>
+    <EnterpriseGateway>yes</EnterpriseGateway>
+    <Microservices>yes</Microservices>
+    </Component>
+    <Component Id="APIGateway">
+    <PolicyManagementThreatProtection>yes</PolicyManagementThreatProtection>
+    <PolicyManagementGateway>yes</PolicyManagementGateway>
+    <ApplicationManagement>yes</ApplicationManagement>
+    <APIManagement>yes</APIManagement>
+    </Component>
+    <Component Id="LicenseInfo">
+    <PriceUnit>CoreD</PriceUnit>
+    <PriceQuantity>16</PriceQuantity>
+    <TypeOfInstallation/>
+    <LicenseType/>
+    <ExtendedRights/>
+    <LicenseVersion>1.2</LicenseVersion>
+    <Metering>MNO</Metering>
+    </Component>
+    </SoftwareAG_License>

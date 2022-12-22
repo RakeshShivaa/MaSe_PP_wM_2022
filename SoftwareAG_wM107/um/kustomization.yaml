@@ -1,0 +1,7 @@
+resources:
+  - um-pvc.yaml
+  - um-configmap.yaml
+  - um-license-configmap.yaml
+  - um-services.yaml
+  - um-deployment.yaml
+  - um-jobs.yaml

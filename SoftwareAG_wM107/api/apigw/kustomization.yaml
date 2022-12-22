@@ -1,0 +1,5 @@
+resources:
+  - apigw-configmap.yaml
+  - apigw-license-configmap.yaml
+  - apigw-services.yaml
+  - apigw-deployment.yaml

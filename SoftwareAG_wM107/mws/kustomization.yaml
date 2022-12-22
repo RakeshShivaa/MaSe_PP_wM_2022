@@ -1,0 +1,5 @@
+resources:
+  - mws-configmap.yaml
+  - mws-secret.yaml
+  - mws-services.yaml
+  - mws-statefulsets.yaml

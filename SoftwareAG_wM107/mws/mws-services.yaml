@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sag-pp-mws-svc-nodeport
+  labels:
+    app: sag-pp-mws-svc-nodeport
+  namespace: nsp-sag-pp
+spec:
+  type: NodePort
+  selector:
+    app: sag-pp-mws-node
+  ports:
+  - name: mws-http-nodeport
+    port: 8585
+    targetPort: 8585
+    nodePort: 30016
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sag-pp-mws-svc-h
+  labels:
+    app: sag-pp-mws-svc-h
+  namespace: nsp-sag-pp
+spec:
+  clusterIP: None
+  selector:
+    app: sag-pp-mws-node
+  ports:
+  - name: mws-http-port
+    port: 8585

@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sag-pp-mws
+  labels:
+    app: sag-pp-mws
+  namespace: nsp-sag-pp
+spec:
+  serviceName: sag-pp-mws-svc-h
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sag-pp-mws-node
+  template:
+    metadata:
+      labels:
+        app: sag-pp-mws-node
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: sag-pp-mws-server
+        image: masedocker2021/sag-pp-mws107:v1.2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: mws-http-port
+          containerPort: 8585
+        env:
+        - name: DB_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: sag-pp-mws-config
+              key: DB_TYPE
+        - name: DB_URL
+          valueFrom:
+            configMapKeyRef:
+              name: sag-pp-mws-config
+              key: DB_URL
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: sag-pp-mws-secret
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sag-pp-mws-secret
+              key: DB_PASSWORD
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "1.5Gi"
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /
+            port: 8585
+          initialDelaySeconds: 400
+          periodSeconds: 60
+          failureThreshold: 6
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /
+            port: 8585
+          initialDelaySeconds: 450
+          periodSeconds: 60
+          failureThreshold: 6
+
+        volumeMounts:
+        - name: custom-wrapper
+          mountPath: /opt/softwareag/mws/MWS/volumes/configs/profile_cfg/custom_wrapper.conf
+          subPath: custom_wrapper.conf
+          readOnly: false
+        - name: cluster-config
+          mountPath: /tmp/cluster.xml
+          subPath: cluster.xml
+          readOnly: false
+        - name: mws-server-logs
+          mountPath: /opt/softwareag/mws/MWS/volumes/logs/
+          readOnly: false
+        - name: mws-db
+          mountPath: /tmp/mws.db.xml
+          subPath: mws.db.xml
+          readOnly: false
+        command:
+        - /bin/sh
+        - -c
+        - |
+          cp /tmp/mws.db.xml /opt/softwareag/mws/MWS/server/default/config/mws.db.xml
+          cp /tmp/cluster.xml /opt/softwareag/mws/MWS/server/default/config/cluster.xml
+          cd /opt/softwareag/mws/MWS/bin
+          ./mws.sh -s default putconfig cluster.xml
+          sleep 5
+          rm -f /opt/softwareag/mws/MWS/server/default/config/cluster.xml
+          cd /opt/softwareag/mws/MWS/server/default/bin
+          /opt/softwareag/mws/MWS/server/default/bin/container.sh
+      volumes:
+      - name: custom-wrapper
+        configMap:
+          name: sag-pp-mws-config
+          items:
+          - key: custom_wrapper.conf
+            path: custom_wrapper.conf
+          defaultMode: 0777
+      - name: cluster-config
+        configMap:
+          name: sag-pp-mws-config
+          items:
+          - key: cluster.xml
+            path: cluster.xml
+          defaultMode: 0777
+      - name: mws-db
+        configMap:
+          name: sag-pp-mws-config
+          items:
+          - key: mws.db.xml
+            path: mws.db.xml
+          defaultMode: 0777
+
+  volumeClaimTemplates:
+  - metadata:
+      name: mws-server-logs
+    spec:
+      storageClassName: standard
+      accessModes: 
+      - ReadWriteMany
+      resources:
+        requests:
+          storage: "1Gi"

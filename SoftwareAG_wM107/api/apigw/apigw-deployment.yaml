@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: sag-pp-apigw-deploy
+  labels:
+    app: sag-pp-apigw-deploy
+  namespace: nsp-sag-pp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sag-pp-apigw-cluster
+  template:
+    metadata:
+      labels:
+        app: sag-pp-apigw-cluster
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: sag-pp-apigw-server
+        image: masedocker2021/sag-pp-apigw107:v1.2
+        # imagePullPolicy: Never
+        ports:
+        - name: is-port
+          containerPort: 5555
+        - name: comm-port
+          containerPort: 5543
+        - name: apigw-port
+          containerPort: 9072
+        - name: diagnostic-port
+          containerPort: 9999
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "1.5Gi"
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /invoke/wm.server/ping
+            port: 5555
+          initialDelaySeconds: 400
+          periodSeconds: 60
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /invoke/wm.server/ping
+            port: 5555
+          initialDelaySeconds: 500
+          periodSeconds: 60
+          failureThreshold: 5
+        volumeMounts:
+        - name: apigw-license
+          mountPath: /opt/softwareag/IntegrationServer/instances/default/config/licenseKey.xml
+          subPath: apigw-licensekey.xml
+          readOnly: false
+        - name: tsa-license
+          mountPath: /opt/softwareag/common/conf/terracotta-license.key
+          subPath: terracotta-license.key
+          readOnly: false
+        - name: custom-wrapper
+          mountPath: /opt/softwareag/profiles/IS_default/configuration/custom_wrapper.conf
+          subPath: custom_wrapper.conf
+          readOnly: false
+        - name: app-prop
+          mountPath: /opt/softwareag/IntegrationServer/application.properties
+          subPath: application.properties
+          readOnly: false
+        - name: config-sources
+          mountPath: /tmp/config-sources.yml
+          subPath: config-sources.yml
+          readOnly: false
+        - name: system-settings
+          mountPath: /tmp/system-settings.yml
+          subPath: system-settings.yml
+          readOnly: false
+        command:
+        - /bin/sh
+        - -c
+        - |
+          cp /tmp/config-sources.yml /opt/softwareag/IntegrationServer/instances/default/packages/WmAPIGateway/resources/configuration/config-sources.yml
+          cp /tmp/system-settings.yml /opt/softwareag/IntegrationServer/instances/default/packages/WmAPIGateway/resources/configuration/system-settings.yml
+          /opt/softwareag/IntegrationServer/bin/startContainer.sh
+      volumes:
+      - name: apigw-license
+        configMap:
+          name: sag-pp-apigw-license-config
+          items:
+          - key: apigw-licensekey.xml
+            path: apigw-licensekey.xml
+          defaultMode: 0777
+      - name: tsa-license
+        configMap:
+          name: sag-pp-apigw-license-config
+          items:
+          - key: terracotta-license.key
+            path: terracotta-license.key
+          defaultMode: 0777
+      - name: custom-wrapper
+        configMap:
+          name: sag-pp-apigw-config
+          items:
+          - key: custom_wrapper.conf
+            path: custom_wrapper.conf
+          defaultMode: 0777
+      - name: app-prop
+        configMap:
+          name: sag-pp-apigw-config
+          items:
+          - key: application.properties
+            path: application.properties
+          defaultMode: 0777
+      - name: config-sources
+        configMap:
+          name: sag-pp-apigw-config
+          items:
+          - key: config-sources.yml
+            path: config-sources.yml
+          defaultMode: 0777
+      - name: system-settings
+        configMap:
+          name: sag-pp-apigw-config
+          items:
+          - key: system-settings.yml
+            path: system-settings.yml
+          defaultMode: 0777

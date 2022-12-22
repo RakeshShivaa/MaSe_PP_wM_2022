@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sag-pp-tsa-svc-nodeport
+  labels:
+    app: sag-pp-tsa-svc-nodeport
+  namespace: nsp-sag-pp
+spec:
+  type: NodePort
+  sessionAffinity: ClientIP
+  selector:
+    app: sag-pp-tsa-cluster
+  ports:
+    - name: server
+      port: 9510
+      targetPort: 9510
+      nodePort: 30014
+    - name: management
+      port: 9540
+      targetPort: 9540
+      nodePort: 30015

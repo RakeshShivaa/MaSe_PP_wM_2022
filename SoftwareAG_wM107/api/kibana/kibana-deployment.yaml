@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  sag-pp-kibana
+  namespace: nsp-sag-pp
+  labels:
+    component: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana-oss:7.7.1
+        env:
+        - name: "CLUSTER_NAME"
+          value: "SAG_EventDataStore"
+        - name: "ELASTICSEARCH_URL"
+          value: 'http://sag-pp-es-svc-h.nsp-sag-pp.svc.cluster.local:9200'
+        resources:
+          requests:
+            cpu: "0.25"
+            memory: "600Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        ports:
+        - containerPort: 5601
+          #name: kibana
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: kibana-config
+          mountPath: /tmp/kibana.yml
+          subPath: kibana.yml
+          readOnly: false
+        command:
+        - /bin/bash
+        - -c
+        - |
+         cp /tmp/kibana.yml /usr/share/kibana/config/kibana.yml
+         /usr/share/kibana/bin/kibana
+      volumes:
+      - name: kibana-config
+        configMap:
+          name: sag-pp-kibana-config
+          items:
+          - key: kibana.yml
+            path: kibana.yml
+          defaultMode: 0777

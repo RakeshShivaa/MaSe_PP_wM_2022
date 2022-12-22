@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sag-pp-dbc-config
+  namespace: nsp-sag-pp
+data:
+  DB_TYPE: oracle
+  DB_URL: "jdbc:wm:oracle://wm-docker-k8s-oracle-se2-db.cjdskb4ewhrg.us-east-1.rds.amazonaws.com:1521;ServiceName=ORACLEDB_A"

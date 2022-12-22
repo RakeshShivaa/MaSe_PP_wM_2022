@@ -1,0 +1,4 @@
+resources:
+  - kibana-configmap.yaml
+  - kibana-services.yaml
+  - kibana-deployment.yaml

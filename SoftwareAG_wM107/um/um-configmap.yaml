@@ -1,0 +1,237 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sag-pp-um-server-config
+  namespace: nsp-sag-pp
+data: 
+  #file-like key
+  Server_Common.conf: |
+    #encoding=UTF-8
+    # Configuration files must begin with a line specifying the encoding
+    #  of the the file.
+
+    #********************************************************************
+    # Wrapper License Properties (Ignored by Community Edition)
+    #********************************************************************
+
+    # Include file problems can be debugged by removing the first '#'
+    #  from the following line:
+    ##include.debug
+
+    #*******************************************************************
+    # Environment variables used
+    #*******************************************************************
+    #Directory to store heap dumps
+    set.HEAP_DUMP_DIR=../heap_dumps
+    #Executable to compress and clean up heap dumps
+    set.HEAP_DUMP_MGR=./heapdumpmgr.sh
+
+
+    # The following property will output information about which License Key(s)
+    #  are being found, and can aid in resolving any licensing problems.
+    #wrapper.license.debug=FALSE
+
+
+    #********************************************************************
+    # Wrapper Properties
+    #********************************************************************
+    # Java Application
+    wrapper.java.command=../../../../jvm/jvm/bin/java
+    wrapper.java.command.loglevel=NONE
+
+    # Java Library Path (location of Wrapper.DLL or libwrapper.so)
+    wrapper.java.library.path.1=../../../../common/lib/tw-3.5.43
+    wrapper.java.library.path.2=../../../lib
+
+    # Java Library Class Path
+    wrapper.java.classpath.1=../../../lib/nServer.jar
+    wrapper.java.classpath.2=../../../lib/xalan.jar
+    wrapper.java.classpath.3=../../../lib/protobuf-java.jar
+    wrapper.java.classpath.4=../../../lib/sec-common.jar
+    wrapper.java.classpath.5=../../../lib/sec-identity.jar
+    wrapper.java.classpath.6=../../../lib/sec-is-ldap.jar
+    wrapper.java.classpath.7=../../../lib/sec-jaas.jar
+    wrapper.java.classpath.8=../../../lib/sec-misc.jar
+    wrapper.java.classpath.9=../../../lib/sec-utils.jar
+    wrapper.java.classpath.10=../../../lib/bcmail.jar
+    wrapper.java.classpath.11=../../../lib/bcpkix.jar
+    wrapper.java.classpath.12=../../../lib/bcprov.jar
+    wrapper.java.classpath.13=../data
+    wrapper.java.classpath.14=../../../../common/lib/saglic.jar
+    wrapper.java.classpath.15=../../../../common/lib/tw-3.5.43/wrapper.jar
+    wrapper.java.classpath.16=../../../../common/lib/ext/log4j/log4j-api.jar
+    wrapper.java.classpath.17=../../../../common/lib/ext/log4j/log4j-core.jar
+    wrapper.java.classpath.18=../../../../common/metering/lib/metering-agent.jar
+
+    wrapper.java.mainclass=com.pcbsys.nirvana.server.ServerService
+
+    wrapper.use_system_time=FALSE
+    wrapper.timer_slow_threshold=10
+    wrapper.timer_fast_threshold=10
+
+
+    #If the ping times out we dont want restarts but a thread dump
+    wrapper.ping.timeout.action=DUMP
+
+    #Set the actual ping timeout
+    wrapper.ping.timeout=120
+
+    #set the threshold for alerts in the log. when we see entries it means the jvm was unresponsive for a small period of time
+    wrapper.ping.alert.threshold=1
+    wrapper.ping.alert.loglevel=STATUS
+
+
+
+    # Initial Java Heap Size (in MB)
+    wrapper.java.initmemory=512
+
+    # Maximum Java Heap Size (in MB)
+    wrapper.java.maxmemory=1024
+
+    # Java Bits.  On applicable platforms, tells the JVM to run in 32 or 64-bit mode.
+    wrapper.java.additional.auto_bits=TRUE
+
+    # Application parameters.  Add parameters as needed starting from 1
+    #wrapper.app.parameter.1=
+
+    # Additional java props
+    wrapper.java.additional.1=-DLOGLEVEL=4
+    wrapper.java.additional.2=-DLOGSIZE=100000000
+    wrapper.java.additional.3=-DREALM=umserver
+    wrapper.java.additional.4="-DDATADIR=/opt/softwareag/UniversalMessaging/server/umserver/data"
+    wrapper.java.additional.4.stripquotes=TRUE
+    wrapper.java.additional.5="-DSERVERDIR=/opt/softwareag/UniversalMessaging/server/umserver"
+    wrapper.java.additional.5.stripquotes=TRUE
+    wrapper.java.additional.6=-DADAPTER_0=nhp://0.0.0.0:9000
+    wrapper.java.additional.7="-Djavax.net.ssl.trustStore=/opt/softwareag/UniversalMessaging/server/umserver/bin/nirvanacacerts.jks"
+    wrapper.java.additional.7.stripquotes=TRUE
+    wrapper.java.additional.8=-Djavax.net.ssl.trustStorePassword=nirvana
+    wrapper.java.additional.9="-Djavax.net.ssl.keyStore=/opt/softwareag/UniversalMessaging/server/umserver/bin/server.jks"
+    wrapper.java.additional.9.stripquotes=TRUE
+    wrapper.java.additional.10=-Djavax.net.ssl.keyStorePassword=nirvana
+    wrapper.java.additional.11=-Djava.protocol.handler.pkgs=javax.net.ssl
+    wrapper.java.additional.12=-Dcom.sun.management.jmxremote
+    wrapper.java.additional.13=-DSECURITYFILE=secfile.conf
+    wrapper.java.additional.14="-DLICENCE_DIR=/opt/softwareag/UniversalMessaging/server/umserver"
+    wrapper.java.additional.14.stripquotes=TRUE
+    wrapper.java.additional.15=-DLICENCE_FILE=licence.xml
+    wrapper.java.additional.16=-DExitOnLockRemoval=true
+    wrapper.java.additional.17=-XX:MaxDirectMemorySize=1G
+
+    #Authentication configuration
+    wrapper.java.additional.18=-DNirvana.auth.enabled=N
+    wrapper.java.additional.19=-DNirvana.auth.mandatory=N
+    wrapper.java.additional.20=-DNirvana.auth.server.jaaskey=UM-Default
+    wrapper.java.additional.21=-Djava.security.auth.login.config=jaas.conf
+
+    #nirvana.log file configuration
+    wrapper.java.additional.22="-DLOGFILE=/opt/softwareag/UniversalMessaging/server/umserver/data/nirvana.log"
+    wrapper.java.additional.22.stripquotes=TRUE
+
+    #Prometheus JMX Exporter agent
+    #wrapper.java.additional.26=-javaagent:/opt/softwareag/UniversalMessaging/lib/jmx_prometheus_javaagent.jar=0.0.0.0:9200:/opt/softwareag/UniversalMessaging/server/umserver/bin/jmx_exporter.yaml
+
+    #JVM vendor specific arguments follow
+    #Enables heap dump generation on out of memory error
+    wrapper.java.additional.23=-XX:+HeapDumpOnOutOfMemoryError
+    wrapper.java.additional.24="-XX:HeapDumpPath=%HEAP_DUMP_DIR%"
+    wrapper.java.additional.24.stripquotes=TRUE
+    #Compress the generated heap dump file and delete oldest heap dumps preserving 10 most recent ones
+    #Note: The command assumes default heap dump file name: java_pid%p.hprof
+    wrapper.java.additional.25="-XX:OnOutOfMemoryError=%HEAP_DUMP_MGR% -deloldest java_pid.* -compress java_pid%p.hprof"
+    wrapper.java.additional.25.stripquotes=TRUE
+
+    #********************************************************************
+    # Wrapper General Properties
+    #********************************************************************
+    # Allow for the use of non-contiguous numbered properties
+    wrapper.ignore_sequence_gaps=TRUE
+
+    #********************************************************************
+    # Wrapper JVM Checks
+    #********************************************************************
+    # Detect DeadLocked Threads in the JVM. (Requires Standard Edition)
+    wrapper.check.deadlock=TRUE
+    wrapper.check.deadlock.interval=60
+    wrapper.check.deadlock.action=DUMP,RESTART
+    wrapper.check.deadlock.output=FULL
+
+    wrapper.max_failed_invocations=1
+    wrapper.disable_restarts=TRUE
+
+    wrapper.console.fatal_to_stderr=FALSE
+    wrapper.console.error_to_stderr=FALSE
+    wrapper.console.warn_to_stderr=FALSE
+
+
+
+    # Out Of Memory detection.
+    # (Simple match)
+    #wrapper.filter.trigger.1000=java.lang.OutOfMemoryError
+    #wrapper.filter.action.1000=RESTART
+    #wrapper.filter.message.1000=The JVM has run out of memory.
+
+    #********************************************************************
+    # Wrapper Logging Properties
+    #********************************************************************
+    # Format of output for the console.  (See docs for formats)
+    wrapper.console.format=PM
+
+    # Log Level for console output.  (See docs for log levels)
+    wrapper.console.loglevel=INFO
+
+    # Log file to use for wrapper output logging.
+    wrapper.logfile=UMRealmService.log
+
+    # Format of output for the log file.  (See docs for formats)
+    wrapper.logfile.format=LPTM
+
+    # Log Level for log file output.  (See docs for log levels)
+    wrapper.logfile.loglevel=INFO
+
+    # Maximum size that the log file will be allowed to grow to before
+    #  the log is rolled. Size is specified in bytes.  The default value
+    #  of 0, disables log rolling.  May abbreviate with the 'k' (kb) or
+    #  'm' (mb) suffix.  For example: 10m = 10 megabytes.
+    wrapper.logfile.maxsize=10000000
+
+    # Maximum number of rolled log files which will be allowed before old
+    #  files are deleted.  The default value of 0 implies no limit.
+    wrapper.logfile.maxfiles=10
+
+    # Log Level for sys/event log output.  (See docs for log levels)
+    wrapper.syslog.loglevel=FATAL
+
+    #********************************************************************
+    # Wrapper NT Service Properties
+    #********************************************************************
+    # WARNING - Do not modify any of these properties when an application
+    #  using this configuration file has been installed as a service.
+    #  Please uninstall the service before modifying this section.  The
+    #  service can then be reinstalled.
+
+    # Name of the service
+    wrapper.ntservice.name=um_realm_umserver_10.7 1
+
+
+    # Display name of the service
+    wrapper.ntservice.displayname=Software AG Universal Messaging 10.7 (umserver)
+
+
+    # Description of the service
+    wrapper.ntservice.description=Software AG Universal Messaging Realm Server 10.7
+
+    # Service dependencies.  Add dependencies as needed starting from 1
+    wrapper.ntservice.dependency.1=
+
+    # Mode in which the service is installed.  AUTO_START or DEMAND_START
+    wrapper.ntservice.starttype=DEMAND_START
+
+    # Allow the service to interact with the desktop.
+    wrapper.ntservice.interactive=false
+
+    #********************************************************************
+    # Custom Wrapper configuration file
+    #********************************************************************
+    #include /opt/softwareag/UniversalMessaging/server/umserver/bin/Custom_Server_Common.conf
+

@@ -1,0 +1,4 @@
+resources:
+  - dbc-secret.yaml
+  - dbc-configmap.yaml
+  - dbc-jobs.yaml

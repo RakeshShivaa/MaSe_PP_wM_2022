@@ -1,0 +1,201 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sag-pp-mws-config
+  namespace: nsp-sag-pp
+data:
+  DB_TYPE: oracle
+  DB_URL: "jdbc:wm:oracle://wm-docker-k8s-oracle-se2-db.cjdskb4ewhrg.us-east-1.rds.amazonaws.com:1521;ServiceName=ORACLEDB_A"
+ 
+  mws.db.xml: |
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?><CONFIG>
+        <CONNECTION default="true" displayname="Default" id="1" name="default" type="oracle">
+            <SQLWORKERCLASS>com.webmethods.portal.service.sql.core.BaseSqlWorker</SQLWORKERCLASS>
+            <CONNPROVIDERCLASS>com.webmethods.portal.service.sql.core.provider.pool.PooledConnectionProvider</CONNPROVIDERCLASS>
+            <PARAMS>
+                <DRIVER>com.wm.dd.jdbc.oracle.OracleDriver</DRIVER>
+                <URL>jdbc:wm:oracle://wm-docker-k8s-oracle-se2-db.cjdskb4ewhrg.us-east-1.rds.amazonaws.com:1521;ServiceName=ORACLEDB_A</URL>
+                <USER>webm107mws_hari</USER>
+                            <!-- Password could be specified in clear text, it will be automatically encrypted during MWS startup -->
+                <PASSWORD>{AES}MbYmPezV4NS3Ta31QMtyUQ==</PASSWORD>
+                <CACHESTATEMENTS>false</CACHESTATEMENTS>
+                <TESTSQL>SELECT COUNT(*) FROM TBLTHING WHERE IDTHING = 1</TESTSQL>
+                <MAXCONNECTIONS>100</MAXCONNECTIONS>
+                <MINCONNECTIONS>0</MINCONNECTIONS>
+                <!-- Max amount of idle time (in seconds) of the objects pooled by this pool -->
+                <IDLETIMEOUT>60</IDLETIMEOUT>
+                <!-- Time (in seconds) between eviction runs -->
+                <CLEANUPPERIOD>10</CLEANUPPERIOD>
+            </PARAMS>
+        </CONNECTION>
+    </CONFIG>
+    
+  cluster.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Cluster clusterId="1367262828" container="true" frontEndSecurePort="8585" frontEndUrl="http://sag-pp-mws-svc-h.nsp-sag-pp.svc.cluster.local:8585">
+      <!-- lists all physical servers in the cluster -->
+      <Category name="servers">
+        <Component class="com.webmethods.portal.system.cluster.impl.Server" enabled="true" name="sag-pp-mws-0-node25684" nodeType="MWS">
+          <Properties host="sag-pp-mws-0.sag-pp-mws-svc-h.nsp-sag-pp.svc.cluster.local" name="http" port="8585"/>
+          <Properties host="sag-pp-mws-0.sag-pp-mws-svc-h.nsp-sag-pp.svc.cluster.local" name="https" port="0"/>
+          <Role name="autodeploy"/>
+          <Role name="search"/>
+          <Role name="taskengine"/>
+          <Role name="notification"/>
+        </Component>
+      </Category>
+    </Cluster>
+
+  custom_wrapper.conf: |
+    #encoding=UTF-8
+
+    #********************************************************************
+    # Application Paths
+    #********************************************************************
+    # Application Paths
+    set.SERVER_NAME=default
+    set.NODE_NAME=sag-pp-mws-0-node25684
+    set.SERVER_HOME=/opt/softwareag/mws/MWS/server/default
+    set.PORTAL_HOME=%SERVER_HOME%/../..
+    set.WM_HOME=%PORTAL_HOME%/..
+    #set.JAVA_HOME=${wrapper.java.home}
+    set.FILE_ENCODING=UTF-8
+
+    # SSL Properties
+    set.JAVA_KEYSTORE=%SERVER_HOME%/config/security/localhost.p12
+    set.JAVA_KEYSTORETYPE=pkcs12
+    set.JAVA_KEYSTORE_PASSWORD={DES}vrFIelCdkow=
+    set.JAVA_TRUSTSTORE=%SERVER_HOME%/config/security/sagdemoca.jks
+    set.JAVA_TRUSTSTORETYPE=jks
+    set.JAVA_TRUSTSTORE_PASSWORD={DES}vrFIelCdkow=
+
+
+    # Minimum/Maximum Java Heap Size (in MB)
+    wrapper.java.initmemory=1024
+    wrapper.java.maxmemory=1024
+
+    # Number of seconds to allow between two ping responses coming from the JVM (in sec)
+    wrapper.ping.timeout=120
+
+    # Java Bits.  On applicable platforms, tells the JVM to run in 32 or 64-bit mode.
+    wrapper.java.additional.auto_bits=TRUE
+
+    # Java Library Path
+    wrapper.java.library.path.100=%JAVA_HOME%/bin
+    wrapper.java.library.path.101=%SERVER_HOME%/bin
+    wrapper.java.library.path.102=%WM_HOME%/common/bin
+
+    # Java Additional Parameters
+    wrapper.java.additional.100=-server
+    wrapper.java.additional.102=-Djava.io.tmpdir="%SERVER_HOME%/temp"
+    wrapper.java.additional.102.stripquotes=TRUE
+    wrapper.java.additional.103=-Djava.awt.headless=true
+    wrapper.java.additional.104=-Dfile.encoding=%FILE_ENCODING%
+
+    wrapper.java.additional.200=-Dportal.home="%PORTAL_HOME%"
+    wrapper.java.additional.200.stripquotes=TRUE
+    wrapper.java.additional.201=-Dserver.name=%SERVER_NAME%
+    wrapper.java.additional.202=-Dportal.node.name=%NODE_NAME%
+    # specify the hostname or ip address that the JCR remoting listens on
+    #  or leave empty to listen on all of them
+    wrapper.java.additional.204=-Dmws.jcr.rmi.bind.address=
+
+    wrapper.java.additional.301=-Djavax.net.ssl.trustStore="%JAVA_TRUSTSTORE%"
+    wrapper.java.additional.301.stripquotes=TRUE
+    wrapper.java.additional.302=-Djavax.net.ssl.keyStore="%JAVA_KEYSTORE%"
+    wrapper.java.additional.302.stripquotes=TRUE
+    wrapper.java.additional.303=-Djavax.net.ssl.trustStorePassword=%JAVA_TRUSTSTORE_PASSWORD%
+    wrapper.java.additional.304=-Djavax.net.ssl.keyStorePassword=%JAVA_KEYSTORE_PASSWORD%
+    wrapper.java.additional.305=-Djavax.net.ssl.keyStoreType=%JAVA_KEYSTORETYPE%
+    wrapper.java.additional.306=-Djavax.net.ssl.trustStoreType=%JAVA_TRUSTSTORETYPE%
+    wrapper.java.additional.306.stripquotes=TRUE
+    wrapper.java.additional.307=-DLog4jContextSelector=org.apache.logging.log4j.core.selector.BasicContextSelector
+
+    #NOTE: wrapper.java.additional.500 to 510 is reserved for debug configuration !
+    #wrapper.java.additional.500=-Xdebug
+    #wrapper.java.additional.501=-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=10033
+    #wrapper.java.additional.502=-Dlog4j.default.log.level=DEBUG
+    #wrapper.java.additional.503=-Ddebug=true
+    #wrapper.java.additional.504=-Dframework.dev.mode=false
+
+
+    #********************************************************************
+    # Wrapper General Properties
+    #********************************************************************
+    # Allow for the use of non-contiguous numbered properties
+    wrapper.ignore_sequence_gaps=TRUE
+
+    # Title to use when running as a console
+    wrapper.console.title=Software AG My webMethods Server (%SERVER_NAME%)
+
+    # When set to TRUE causes the Wrapper to implicitly flush stdout after each line of output is sent to the console.
+    #  For normal operation, this does not appear to be necessary. But users who are piping the console output of the Wrapper process
+    #  into another application have reported that the console output was not being flushed in real time.
+    wrapper.console.flush=TRUE
+
+    #********************************************************************
+    # Wrapper JVM Checks
+    #********************************************************************
+    # Detect DeadLocked Threads in the JVM. (Requires Standard Edition)
+    wrapper.check.deadlock=FALSE
+    wrapper.check.deadlock.interval=60
+    wrapper.check.deadlock.action=RESTART
+    wrapper.check.deadlock.output=FULL
+
+    #********************************************************************
+    # JVM Exit code handling
+    #********************************************************************
+    wrapper.on_exit.6=RESTART
+    wrapper.jvm_exit.timeout=180
+
+    # Out Of Memory detection.
+    wrapper.filter.trigger.1000=java.lang.OutOfMemoryError
+    wrapper.filter.action.1000=RESTART
+    wrapper.filter.message.1000=The JVM has run out of memory.
+
+    #********************************************************************
+    # Wrapper Email Notifications. (Requires Professional Edition)
+    #********************************************************************
+    # Common Event Email settings.
+    #wrapper.event.default.email.debug=TRUE
+    #wrapper.event.default.email.smtp.host=<SMTP_Host>
+    #wrapper.event.default.email.smtp.port=25
+    #wrapper.event.default.email.subject=[%WRAPPER_HOSTNAME%:%WRAPPER_NAME%:%WRAPPER_EVENT_NAME%] Event Notification
+    #wrapper.event.default.email.sender=<Sender email>
+    #wrapper.event.default.email.recipient=<Recipient email>
+
+    # Configure the log attached to event emails.
+    #wrapper.event.default.email.attach_log=TRUE
+    #wrapper.event.default.email.maillog.lines=50
+    #wrapper.event.default.email.maillog.format=LPTM
+    #wrapper.event.default.email.maillog.loglevel=INFO
+
+    # Enable specific event emails.
+    #wrapper.event.wrapper_start.email=TRUE
+    #wrapper.event.jvm_prelaunch.email=TRUE
+    #wrapper.event.jvm_start.email=TRUE
+    #wrapper.event.jvm_started.email=TRUE
+    #wrapper.event.jvm_deadlock.email=TRUE
+    #wrapper.event.jvm_stop.email=TRUE
+    #wrapper.event.jvm_stopped.email=TRUE
+    #wrapper.event.jvm_restart.email=TRUE
+    #wrapper.event.jvm_failed_invocation.email=TRUE
+    #wrapper.event.jvm_max_failed_invocations.email=TRUE
+    #wrapper.event.jvm_kill.email=TRUE
+    #wrapper.event.jvm_killed.email=TRUE
+    #wrapper.event.jvm_unexpected_exit.email=TRUE
+    #wrapper.event.wrapper_stop.email=TRUE
+
+    # Specify custom mail content
+    wrapper.event.jvm_restart.email.body=The JVM was restarted.\n\nPlease check on its status.\n
+
+    #Kerberos settings
+    #wrapper.java.additional.601=-Djava.security.krb5.conf="%SERVER_HOME%/config/krb5.conf"
+    #wrapper.java.additional.601.stripquotes=TRUE
+    wrapper.java.additional.602=-Dsun.security.krb5.debug=false
+    wrapper.java.additional.603=-Djavax.security.auth.useSubjectCredsOnly=false
+
+    # Http client settings for Axis webservice connector
+    wrapper.java.additional.701=-Daxisclient.DefaultMaxConnectionsPerHost=10
+    wrapper.java.additional.702=-Daxisclient.MaxTotalConnections=100
+    set.JAVA_HOME=/opt/softwareag/mws/jvm/jvm

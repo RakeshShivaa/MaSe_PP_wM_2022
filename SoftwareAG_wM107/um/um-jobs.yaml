@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sag-pp-um-job
+  namespace: nsp-sag-pp
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: um-job-container
+        image: masedocker2021/sag-pp-um107:v1.2
+        command: 
+        - /bin/bash
+        - -c 
+        - |
+         /opt/softwareag/UniversalMessaging/tools/runner/runUMTool.sh \
+         CreateConnectionFactory -rname=nsp://sag-pp-um-svc.nsp-sag-pp.svc.cluster.local:9000 \
+         -connectionurl=nsp://sag-pp-um-svc.nsp-sag-pp.svc.cluster.local:9000 \
+         -factoryname=local_um -factorytype=default
+          
+      imagePullSecrets:
+      - name: dockerrepocred

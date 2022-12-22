@@ -1,0 +1,5 @@
+resources:
+  - tsa-configmap.yaml
+  - tsa-headless-svc.yaml
+  - tsa-services.yaml
+  - tsa-statefulsets.yaml

@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+    um:
+        image: masedocker2021/sag-pp-um107:v1.2
+        #hostname: 192.168.1.10
+        container_name: um107-container
+        ports:
+          - "9000:9000"
+        volumes:
+          - um107-msr-data:/opt/softwareag/UniversalMessaging/server/hari-umserver/data
+          - um107-msr-logs:/opt/softwareag/UniversalMessaging/server/hari-umserver/logs
+        networks:
+          - webmethods-msr
+    msr:
+        image: masedocker2021/sag-pp-msr107:v1.2
+        container_name: msr107-container
+        ports:
+          - "5585:5555"
+          - "9995:9999"
+          - "5545:5543"
+        depends_on:
+          - um
+        networks:
+          - webmethods-msr
+networks:
+  webmethods-msr:
+
+volumes:
+  um107-msr-data:
+  um107-msr-logs:

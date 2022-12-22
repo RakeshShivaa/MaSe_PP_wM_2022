@@ -1,0 +1,75 @@
+#Separate for each type
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: sag-pp-um-deploy
+  labels:
+    app: sag-pp-um-deploy
+  namespace: nsp-sag-pp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sag-pp-um-deploy
+  template:
+    metadata:
+      labels:
+        app: sag-pp-um-deploy
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: um-server-container
+        image: masedocker2021/sag-pp-um107:v1.2
+        ports:
+        - name: nsp-port
+          containerPort: 9000
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "1.5Gi"
+        readinessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 5
+        livenessProbe: 
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 5
+        volumeMounts:
+          # Path for the container file system running inside pod. 
+        - name: um-license
+          mountPath: /opt/softwareag/UniversalMessaging/server/umserver/licence.xml
+          subPath: license-um.xml
+          readOnly: false
+        - name: um-server-config
+          mountPath: /opt/softwareag/UniversalMessaging/server/umserver/bin/Server_Common.conf
+          subPath: Server_Common.conf
+          readOnly: false
+        - name: data-directory
+          mountPath: /opt/softwareag/UniversalMessaging/server/umserver/data
+          readOnly: false
+      volumes:
+      - name: um-license 
+        configMap:
+          name: sag-pp-um-license-config
+          items:
+          - key: license-um.xml
+            path: license-um.xml
+          defaultMode: 0777
+      - name: um-server-config
+        configMap:
+          name: sag-pp-um-server-config
+          items:
+          - key: Server_Common.conf
+            path: Server_Common.conf
+          defaultMode: 0777      
+      - name: data-directory
+        persistentVolumeClaim:
+          claimName: sag-pp-um-pvc

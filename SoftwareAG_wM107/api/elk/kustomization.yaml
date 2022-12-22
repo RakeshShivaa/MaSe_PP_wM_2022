@@ -1,0 +1,4 @@
+resources:
+  - es-headless-svc.yaml
+  - es-services.yaml
+  - es-statefulsets.yaml

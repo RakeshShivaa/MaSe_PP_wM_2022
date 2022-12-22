@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: sag-pp-msr-deploy
+  labels:
+    app: sag-pp-msr-deploy
+  namespace: nsp-sag-pp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sag-pp-msr
+  template:
+    metadata:
+      labels:
+        app: sag-pp-msr
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: sag-pp-msr
+        image: masedocker2021/sag-pp-msr107:v1.2
+        # imagePullPolicy: Never
+        ports:
+        - name: primary-port
+          containerPort: 5555
+        - name: ssl-port
+          containerPort: 5543
+        - name: diagnostic-port
+          containerPort: 9999
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: "600Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /invoke/wm.server/ping
+            port: 5555
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /invoke/wm.server/ping
+            port: 5555
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          failureThreshold: 5
+        volumeMounts:
+        - name: msr-license
+          mountPath: /opt/softwareag/IntegrationServer/config/licenseKey.xml
+          subPath: msr-licensekey.xml
+          readOnly: false
+        - name: setenv
+          mountPath: /opt/softwareag/IntegrationServer/bin/setenv.sh
+          subPath: setenv.sh
+          readOnly: false
+        - name: app-prop
+          mountPath: /opt/softwareag/IntegrationServer/application.properties
+          subPath: application.properties
+          readOnly: false
+        - name: jndi-prop
+          mountPath: /tmp/jndi_DEFAULT_IS_JNDI_PROVIDER.properties
+          subPath: jndi_DEFAULT_IS_JNDI_PROVIDER.properties
+          readOnly: false
+        - name: messaging-prop
+          mountPath: /tmp/messaging.cnf
+          subPath: messaging.cnf
+          readOnly: false
+        - name: jms-prop
+          mountPath: /tmp/jms.cnf
+          subPath: jms.cnf
+          readOnly: false
+        command:
+        - /bin/sh
+        - -c
+        - |
+         cp /tmp/jndi_DEFAULT_IS_JNDI_PROVIDER.properties  /opt/softwareag/IntegrationServer/config/jndi/jndi_DEFAULT_IS_JNDI_PROVIDER.properties
+         cp /tmp/messaging.cnf /opt/softwareag/IntegrationServer/config/messaging.cnf
+         cp /tmp/jms.cnf  /opt/softwareag/IntegrationServer/config/jms.cnf
+         /opt/softwareag/IntegrationServer/bin/startContainer.sh
+      volumes:
+      - name: msr-license
+        configMap:
+          name: sag-pp-ismsr-license-config
+          items:
+          - key: msr-licensekey.xml
+            path: msr-licensekey.xml
+          defaultMode: 0777
+      - name: app-prop
+        configMap:
+          name: sag-pp-msr-config
+          items:
+          - key: application.properties
+            path: application.properties
+          defaultMode: 0777
+      - name: jndi-prop
+        configMap:
+          name: sag-pp-msr-config
+          items:
+          - key: jndi_DEFAULT_IS_JNDI_PROVIDER.properties
+            path: jndi_DEFAULT_IS_JNDI_PROVIDER.properties
+          defaultMode: 0777
+      - name: messaging-prop
+        configMap:
+          name: sag-pp-msr-config
+          items:
+          - key: messaging.cnf
+            path: messaging.cnf
+          defaultMode: 0777
+      - name: jms-prop
+        configMap:
+          name: sag-pp-msr-config
+          items:
+          - key: jms.cnf
+            path: jms.cnf
+          defaultMode: 0777
+      - name: setenv
+        configMap:
+          name: sag-pp-msr-config
+          items:
+          - key: setenv.sh
+            path: setenv.sh
+          defaultMode: 0777

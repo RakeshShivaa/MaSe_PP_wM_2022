@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sag-pp-dbc-job
+  namespace: nsp-sag-pp
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - image: masedocker2021/sag-pp-dbc107:v1.2
+        name: sag-pp-dbc-job
+        env:
+        - name: DB_APIGW_USER
+          valueFrom:
+            secretKeyRef: 
+              name: sag-pp-dbc-secret
+              key: DB_APIGW_USER
+        - name: DB_APIGW_PASSWORD
+          valueFrom:
+            secretKeyRef: 
+              name:  sag-pp-dbc-secret
+              key: DB_APIGW_PASSWORD
+        - name: DB_IS_USER
+          valueFrom:
+            secretKeyRef: 
+              name: sag-pp-dbc-secret
+              key: DB_IS_USER
+        - name: DB_IS_PASSWORD
+          valueFrom:
+            secretKeyRef: 
+              name:  sag-pp-dbc-secret
+              key: DB_IS_PASSWORD
+        - name: DB_MWS_USER
+          valueFrom:
+            secretKeyRef: 
+              name: sag-pp-dbc-secret
+              key: DB_MWS_USER
+        - name: DB_MWS_PASSWORD
+          valueFrom:
+            secretKeyRef: 
+              name:  sag-pp-dbc-secret
+              key: DB_MWS_PASSWORD
+        - name: DB_TYPE
+          valueFrom:
+            configMapKeyRef: 
+              name:  sag-pp-dbc-config
+              key: DB_TYPE        
+        - name: DB_URL
+          valueFrom:
+            configMapKeyRef: 
+              name:  sag-pp-dbc-config
+              key: DB_URL
+        command: 
+        - /bin/bash
+        - -c 
+        - |
+         /opt/softwareag/common/db/bin/dbConfigurator.sh -a create -pr MWS -v latest -d $(DB_TYPE) -l '$(DB_URL)' -u '$(DB_MWS_USER)' -p '$(DB_MWS_PASSWORD)' -tsdata 'WEBM107_DATA01' -tsindex 'WEBM107_DATA01'
+         /opt/softwareag/common/db/bin/dbConfigurator.sh -a create -pr IntegrationServer -v latest -d $(DB_TYPE) -l '$(DB_URL)' -u '$(DB_IS_USER)' -p '$(DB_IS_PASSWORD)' -tsdata 'WEBM107_DATA01' -tsindex 'WEBM107_DATA01'
+         /opt/softwareag/common/db/bin/dbConfigurator.sh -a create -pr IntegrationServer -v latest -d $(DB_TYPE) -l '$(DB_URL)' -u  '$(DB_APIGW_USER)' -p '$(DB_APIGW_PASSWORD)' -tsdata 'WEBM107_DATA01' -tsindex 'WEBM107_DATA01'
+      imagePullSecrets:
+      - name: dockerrepocred

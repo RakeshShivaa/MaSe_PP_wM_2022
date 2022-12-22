@@ -1,0 +1,5 @@
+resources:
+  - msr-configmap.yaml
+  - msr-license-config.yaml
+  - msr-services.yaml
+  - msr-deployment.yaml
